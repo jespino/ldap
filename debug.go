@@ -6,19 +6,21 @@ import (
 	"gopkg.in/asn1-ber.v1"
 )
 
-// debugging type
-//     - has a Printf method to write the debug output
-type debugging bool
-
-// write debug output
-func (debug debugging) Printf(format string, args ...interface{}) {
-	if debug {
-		log.Printf(format, args...)
-	}
+// Debugger is the interface that wraps the debug output methods
+type Debugger interface {
+	Printf(format string, args ...interface{})
+	PrintPacket(packet *ber.Packet)
 }
 
-func (debug debugging) PrintPacket(packet *ber.Packet) {
-	if debug {
-		ber.PrintPacket(packet)
-	}
+// DefaultDebugger is the default implementation of the debug output methods
+type DefaultDebugger struct{}
+
+// Printf write debug output
+func (DefaultDebugger) Printf(format string, args ...interface{}) {
+	log.Printf(format, args...)
+}
+
+// PrintPacket write debug packet output
+func (DefaultDebugger) PrintPacket(packet *ber.Packet) {
+	ber.PrintPacket(packet)
 }

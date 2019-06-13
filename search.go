@@ -320,7 +320,7 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 	searchResult := new(SearchResult)
 	for {
 		result, err := l.Search(searchRequest)
-		l.Debug.Printf("Looking for Paging Control...")
+		l.Debugf("Looking for Paging Control...")
 		if err != nil {
 			return searchResult, err
 		}
@@ -338,25 +338,25 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 			searchResult.Controls = append(searchResult.Controls, control)
 		}
 
-		l.Debug.Printf("Looking for Paging Control...")
+		l.Debugf("Looking for Paging Control...")
 		pagingResult := FindControl(result.Controls, ControlTypePaging)
 		if pagingResult == nil {
 			pagingControl = nil
-			l.Debug.Printf("Could not find paging control.  Breaking...")
+			l.Debugf("Could not find paging control.  Breaking...")
 			break
 		}
 
 		cookie := pagingResult.(*ControlPaging).Cookie
 		if len(cookie) == 0 {
 			pagingControl = nil
-			l.Debug.Printf("Could not find cookie.  Breaking...")
+			l.Debugf("Could not find cookie.  Breaking...")
 			break
 		}
 		pagingControl.SetCookie(cookie)
 	}
 
 	if pagingControl != nil {
-		l.Debug.Printf("Abandoning Paging...")
+		l.Debugf("Abandoning Paging...")
 		pagingControl.PagingSize = 0
 		l.Search(searchRequest)
 	}
@@ -379,7 +379,7 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 		packet.AppendChild(encodeControls(searchRequest.Controls))
 	}
 
-	l.Debug.PrintPacket(packet)
+	l.DebugPacket(packet)
 
 	msgCtx, err := l.sendMessage(packet)
 	if err != nil {
@@ -394,13 +394,13 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 
 	foundSearchResultDone := false
 	for !foundSearchResultDone {
-		l.Debug.Printf("%d: waiting for response", msgCtx.id)
+		l.Debugf("%d: waiting for response", msgCtx.id)
 		packetResponse, ok := <-msgCtx.responses
 		if !ok {
 			return nil, NewError(ErrorNetwork, errors.New("ldap: response channel closed"))
 		}
 		packet, err = packetResponse.ReadPacket()
-		l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
+		l.Debugf("%d: got response %p", msgCtx.id, packet)
 		if err != nil {
 			return nil, err
 		}
@@ -445,6 +445,6 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 			result.Referrals = append(result.Referrals, packet.Children[1].Children[0].Value.(string))
 		}
 	}
-	l.Debug.Printf("%d: returning", msgCtx.id)
+	l.Debugf("%d: returning", msgCtx.id)
 	return result, nil
 }

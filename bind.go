@@ -73,7 +73,7 @@ func (l *Conn) SimpleBind(simpleBindRequest *SimpleBindRequest) (*SimpleBindResu
 		return nil, NewError(ErrorNetwork, errors.New("ldap: response channel closed"))
 	}
 	packet, err = packetResponse.ReadPacket()
-	l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
+	l.Debugf("%d: got response %p", msgCtx.id, packet)
 	if err != nil {
 		return nil, err
 	}

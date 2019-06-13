@@ -64,7 +64,7 @@ func (l *Conn) ModifyDN(m *ModifyDNRequest) error {
 	packet.AppendChild(ber.NewInteger(ber.ClassUniversal, ber.TypePrimitive, ber.TagInteger, l.nextMessageID(), "MessageID"))
 	packet.AppendChild(m.encode())
 
-	l.Debug.PrintPacket(packet)
+	l.DebugPacket(packet)
 
 	msgCtx, err := l.sendMessage(packet)
 	if err != nil {
@@ -72,13 +72,13 @@ func (l *Conn) ModifyDN(m *ModifyDNRequest) error {
 	}
 	defer l.finishMessage(msgCtx)
 
-	l.Debug.Printf("%d: waiting for response", msgCtx.id)
+	l.Debugf("%d: waiting for response", msgCtx.id)
 	packetResponse, ok := <-msgCtx.responses
 	if !ok {
 		return NewError(ErrorNetwork, errors.New("ldap: channel closed"))
 	}
 	packet, err = packetResponse.ReadPacket()
-	l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
+	l.Debugf("%d: got response %p", msgCtx.id, packet)
 	if err != nil {
 		return err
 	}
@@ -99,6 +99,6 @@ func (l *Conn) ModifyDN(m *ModifyDNRequest) error {
 		log.Printf("Unexpected Response: %d", packet.Children[1].Tag)
 	}
 
-	l.Debug.Printf("%d: returning", msgCtx.id)
+	l.Debugf("%d: returning", msgCtx.id)
 	return nil
 }

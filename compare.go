@@ -41,7 +41,7 @@ func (l *Conn) Compare(dn, attribute, value string) (bool, error) {
 	request.AppendChild(ava)
 	packet.AppendChild(request)
 
-	l.Debug.PrintPacket(packet)
+	l.DebugPacket(packet)
 
 	msgCtx, err := l.sendMessage(packet)
 	if err != nil {
@@ -49,13 +49,13 @@ func (l *Conn) Compare(dn, attribute, value string) (bool, error) {
 	}
 	defer l.finishMessage(msgCtx)
 
-	l.Debug.Printf("%d: waiting for response", msgCtx.id)
+	l.Debugf("%d: waiting for response", msgCtx.id)
 	packetResponse, ok := <-msgCtx.responses
 	if !ok {
 		return false, NewError(ErrorNetwork, errors.New("ldap: response channel closed"))
 	}
 	packet, err = packetResponse.ReadPacket()
-	l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
+	l.Debugf("%d: got response %p", msgCtx.id, packet)
 	if err != nil {
 		return false, err
 	}

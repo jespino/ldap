@@ -79,7 +79,7 @@ func (l *Conn) Add(addRequest *AddRequest) error {
 		packet.AppendChild(encodeControls(addRequest.Controls))
 	}
 
-	l.Debug.PrintPacket(packet)
+	l.DebugPacket(packet)
 
 	msgCtx, err := l.sendMessage(packet)
 	if err != nil {
@@ -87,13 +87,13 @@ func (l *Conn) Add(addRequest *AddRequest) error {
 	}
 	defer l.finishMessage(msgCtx)
 
-	l.Debug.Printf("%d: waiting for response", msgCtx.id)
+	l.Debugf("%d: waiting for response", msgCtx.id)
 	packetResponse, ok := <-msgCtx.responses
 	if !ok {
 		return NewError(ErrorNetwork, errors.New("ldap: response channel closed"))
 	}
 	packet, err = packetResponse.ReadPacket()
-	l.Debug.Printf("%d: got response %p", msgCtx.id, packet)
+	l.Debugf("%d: got response %p", msgCtx.id, packet)
 	if err != nil {
 		return err
 	}
@@ -114,6 +114,6 @@ func (l *Conn) Add(addRequest *AddRequest) error {
 		log.Printf("Unexpected Response: %d", packet.Children[1].Tag)
 	}
 
-	l.Debug.Printf("%d: returning", msgCtx.id)
+	l.Debugf("%d: returning", msgCtx.id)
 	return nil
 }
